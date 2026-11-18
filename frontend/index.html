@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compass — 영어 학습 콘텐츠 추천 AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand">🧭 Compass</div>
+  <span id="level-badge" class="badge" hidden></span>
+  <button id="dark-toggle" class="icon-btn" title="다크 모드 전환">🌙</button>
+</header>
+
+<main>
+  <!-- ── 채팅 ─────────────────────────────────────────── -->
+  <section id="view-chat" class="view">
+    <div class="banner">🌱 영어가 자라는 순간은 <b>스스로 집중해서 들인 시간</b>마다 옵니다. 학습 후에는 꼭 「기록」해 주세요.</div>
+    <div id="messages"></div>
+    <div id="typing" class="typing" hidden>AI가 생각 중…</div>
+    <div class="chat-actions">
+      <button id="recheck-level" class="ghost" type="button">레벨 다시 보기</button>
+    </div>
+    <form id="chat-form" class="chat-form">
+      <textarea id="chat-input" rows="2" placeholder="예: 리딩을 잘하고 싶어 / 오늘 뭘 공부할지 추천해줘" required></textarea>
+      <button type="submit" id="send-btn">보내기</button>
+    </form>
+  </section>
+
+  <!-- ── 학습 기록 ────────────────────────────────────── -->
+  <section id="view-records" class="view" hidden>
+    <h2>학습 기록</h2>
+    <p class="hint">학습이 끝난 뒤 1분이면 충분합니다 — 내가 들인 시간이 곧 증명이에요.</p>
+    <form id="record-form" class="card form-grid">
+      <label>날짜
+        <input type="date" id="r-date" required>
+      </label>
+      <label>학습 시간(분)
+        <input type="number" id="r-value" min="1" max="1440" placeholder="20" required>
+      </label>
+      <label>한 무엇을 (내용)
+        <input type="text" id="r-memo" maxlength="100" placeholder="예: ORT Stage 2 읽기" required>
+      </label>
+      <label>스킬
+        <select id="r-skill">
+          <option value="">선택 안 함</option>
+          <option value="listening">듣기</option>
+          <option value="reading">읽기</option>
+          <option value="speaking">말하기</option>
+          <option value="vocabulary">어휘</option>
+          <option value="overall">종합</option>
+        </select>
+      </label>
+      <label>느낌
+        <select id="r-reaction">
+          <option value="">선택 안 함</option>
+          <option value="easy">쉬움</option>
+          <option value="just_right">적정</option>
+          <option value="hard">어려움</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="submit" id="record-save">추가</button>
+        <button type="button" id="record-cancel" class="ghost" hidden>취소</button>
+      </div>
+    </form>
+    <div id="record-list" class="list"></div>
+  </section>
+
+  <!-- ── 대화 기록 ────────────────────────────────────── -->
+  <section id="view-history" class="view" hidden>
+    <h2>대화 기록</h2>
+    <p class="hint">이전 대화를 불러와 이어갈 수 있어요.</p>
+    <div id="conversation-list" class="list"></div>
+  </section>
+
+  <!-- ── 요약 & 원칙 ──────────────────────────────────── -->
+  <section id="view-summary" class="view" hidden>
+    <h2>요약 & 원칙</h2>
+
+    <div class="card principle">
+      <h3>핵심 원칙</h3>
+      <ol>
+        <li class="main"><b>스스로 집중해서 들이는 시간이 전부입니다.</b><br>좋은 콘텐츠는 출발점일 뿐, 영어를 실제로 자라게 하는 것은 나의 집중 시간입니다.</li>
+        <li>매 학습 후에 <b>스스로 기록</b>합니다 (시간 · 내용 · 느낌).</li>
+        <li>일주일마다 <b>요약을 확인</b>하고, AI에게 “요즘 내 학습은 어때?”라고 묻습니다.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>내 학습을 기록하고 확인하는 법</h3>
+      <ol>
+        <li>학습 직후 「학습 기록」 탭에서 ①날짜 ②학습 시간 ③한 무엇을 ④느낌(쉬움/적정/어려움)을 남깁니다.</li>
+        <li>여기(「요약」)에서 총량 · 추세 · 스킬 분포를 확인합니다 — 내가 꾸준히 들인 시간이 눈에 보이도록.</li>
+        <li>채팅으로 <b>“요즘 내 학습은 어때?”</b>를 물으면 기록 기반 피드백을 받을 수 있어요.</li>
+        <li>‘쉬움’/‘어려움’이 반복되면 AI가 레벨 재점검을 제안합니다 — 채팅의 「레벨 다시 보기」로 요청할 수 있어요.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>내 프로필</h3>
+      <p class="hint">AI가 추천할 때 이 정보를 참고합니다. AI가 제안한 레벨을 확인했다면 여기서 저장하세요.</p>
+      <form id="profile-form" class="form-grid">
+        <label>연령대
+          <select id="p-age">
+            <option value="">미설정</option>
+            <option value="3-6">3~6세 (부모 대용)</option>
+            <option value="7-12">7~12세</option>
+            <option value="13-17">13~17세</option>
+            <option value="18+">18세 이상</option>
+          </select>
+        </label>
+        <label>레벨
+          <select id="p-level">
+            <option value="">레벨 미설정</option>
+            <option value="L1">L1 — 초입문 (소리)</option>
+            <option value="L2">L2 — 기본 듣기</option>
+            <option value="L3">L3 — 짧은 문장</option>
+            <option value="L4">L4 — 기초 읽기</option>
+            <option value="L5">L5 — 쉬운 텍스트 독해</option>
+            <option value="L6">L6 — 실제 자료</option>
+          </select>
+        </label>
+        <label>목표
+          <input type="text" id="p-goals" maxlength="100" placeholder="예: 영어 소설 읽기">
+        </label>
+        <label>하루 학습 시간(분)
+          <input type="number" id="p-minutes" min="0" max="1440" placeholder="30">
+        </label>
+        <div class="form-actions">
+          <button type="submit">프로필 저장</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>학습 요약</h3>
+      <div id="summary-body"></div>
+    </div>
+
+    <div class="card">
+      <h3>최근 14일 학습량</h3>
+      <div id="chart" class="chart"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button data-view="chat" class="active">💬 채팅</button>
+  <button data-view="records">📝 기록</button>
+  <button data-view="history">🗂 대화</button>
+  <button data-view="summary">📊 요약</button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
