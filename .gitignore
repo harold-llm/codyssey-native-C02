@@ -5,3 +5,7 @@ __pycache__/
 node_modules/
 .DS_Store
 .vercel/
+.data/
+.env.*
+!.env.example
+.pytest_cache/

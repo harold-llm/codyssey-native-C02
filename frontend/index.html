@@ -3,29 +3,71 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="3세부터 성인까지, 지금 나에게 맞는 영어 학습 콘텐츠를 이유와 함께 추천하는 AI">
   <title>Compass — 영어 학습 콘텐츠 추천 AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
   <div class="brand">🧭 Compass</div>
   <span id="level-badge" class="badge" hidden></span>
-  <button id="dark-toggle" class="icon-btn" title="다크 모드 전환">🌙</button>
+  <span id="mode-badge" class="badge muted" title="AI 동작 모드">…</span>
+  <button id="dark-toggle" class="icon-btn" type="button" title="다크 모드 전환" aria-label="다크 모드 전환">🌙</button>
 </header>
 
 <main>
   <!-- ── 채팅 ─────────────────────────────────────────── -->
   <section id="view-chat" class="view">
     <div class="banner">🌱 영어가 자라는 순간은 <b>스스로 집중해서 들인 시간</b>마다 옵니다. 학습 후에는 꼭 「기록」해 주세요.</div>
-    <div id="messages"></div>
-    <div id="typing" class="typing" hidden>AI가 생각 중…</div>
-    <div class="chat-actions">
-      <button id="recheck-level" class="ghost" type="button">레벨 다시 보기</button>
+
+    <div id="onboarding" class="card onboarding" hidden>
+      <h3>먼저 누가 쓰는지 알려 주세요</h3>
+      <p class="hint">연령대에 따라 추천과 안내 방식이 달라져요. 언제든 「요약」 탭에서 바꿀 수 있어요.</p>
+      <div class="chip-row" id="onboarding-age">
+        <button type="button" class="chip" data-age="3-6">3~6세 (보호자)</button>
+        <button type="button" class="chip" data-age="7-12">7~12세</button>
+        <button type="button" class="chip" data-age="13-17">13~17세</button>
+        <button type="button" class="chip" data-age="18+">성인</button>
+      </div>
     </div>
+
+    <div id="messages" aria-live="polite"></div>
+    <div id="typing" class="typing" hidden>AI가 콘텐츠를 찾고 있어요…</div>
+
+    <div class="chip-row quick" id="quick-chips">
+      <button type="button" class="chip" data-prompt="오늘 뭘 공부할지 추천해줘">오늘 뭐 하지?</button>
+      <button type="button" class="chip" data-prompt="내 레벨 확인해줘">레벨 확인</button>
+      <button type="button" class="chip" data-prompt="요즘 내 학습은 어때?">요즘 내 학습은?</button>
+      <button type="button" class="chip" data-prompt="리스닝은 어떻게 공부하는 게 좋아?">리스닝 방법</button>
+      <button type="button" class="chip" data-prompt="무료로 볼 수 있는 리딩 자료 추천해줘">무료 리딩</button>
+    </div>
+
     <form id="chat-form" class="chat-form">
-      <textarea id="chat-input" rows="2" placeholder="예: 리딩을 잘하고 싶어 / 오늘 뭘 공부할지 추천해줘" required></textarea>
+      <textarea id="chat-input" rows="2" maxlength="2000" placeholder="예: 리딩을 잘하고 싶어 / 6살 아이랑 볼 영어 영상 추천해줘" required></textarea>
       <button type="submit" id="send-btn">보내기</button>
     </form>
+    <div class="chat-actions">
+      <button id="new-chat" class="ghost" type="button">새 대화</button>
+      <button id="recheck-level" class="ghost" type="button">레벨 다시 보기</button>
+    </div>
+  </section>
+
+  <!-- ── 추천 ─────────────────────────────────────────── -->
+  <section id="view-recommend" class="view" hidden>
+    <h2>나에게 맞는 콘텐츠</h2>
+    <p class="hint">프로필과 학습 기록을 바탕으로 Compass 카탈로그에서 골랐어요. 카드의 「기록하기」로 학습을 바로 남길 수 있어요.</p>
+    <div id="rec-signal" class="alert" hidden></div>
+    <div class="chip-row" id="rec-skills">
+      <button type="button" class="chip active" data-skill="">전체</button>
+      <button type="button" class="chip" data-skill="listening">듣기</button>
+      <button type="button" class="chip" data-skill="reading">읽기</button>
+      <button type="button" class="chip" data-skill="speaking">말하기</button>
+      <button type="button" class="chip" data-skill="vocabulary">어휘</button>
+      <button type="button" class="chip" data-skill="writing">쓰기</button>
+    </div>
+    <label class="toggle"><input type="checkbox" id="rec-free"> 무료·부분 무료만 보기</label>
+    <div id="rec-list" class="rec-list"></div>
   </section>
 
   <!-- ── 학습 기록 ────────────────────────────────────── -->
@@ -39,8 +81,8 @@
       <label>학습 시간(분)
         <input type="number" id="r-value" min="1" max="1440" placeholder="20" required>
       </label>
-      <label>한 무엇을 (내용)
-        <input type="text" id="r-memo" maxlength="100" placeholder="예: ORT Stage 2 읽기" required>
+      <label class="wide">무엇을 했나요 (내용)
+        <input type="text" id="r-memo" maxlength="200" placeholder="예: Oxford Owl Stage 3 한 권 읽기" required>
       </label>
       <label>스킬
         <select id="r-skill">
@@ -49,6 +91,7 @@
           <option value="reading">읽기</option>
           <option value="speaking">말하기</option>
           <option value="vocabulary">어휘</option>
+          <option value="writing">쓰기</option>
           <option value="overall">종합</option>
         </select>
       </label>
@@ -60,6 +103,8 @@
           <option value="hard">어려움</option>
         </select>
       </label>
+      <input type="hidden" id="r-content-id">
+      <div id="r-linked" class="linked wide" hidden></div>
       <div class="form-actions">
         <button type="submit" id="record-save">추가</button>
         <button type="button" id="record-cancel" class="ghost" hidden>취소</button>
@@ -71,7 +116,7 @@
   <!-- ── 대화 기록 ────────────────────────────────────── -->
   <section id="view-history" class="view" hidden>
     <h2>대화 기록</h2>
-    <p class="hint">이전 대화를 불러와 이어갈 수 있어요.</p>
+    <p class="hint">이전 대화를 불러와 이어갈 수 있어요. 채팅은 자동으로 저장됩니다.</p>
     <div id="conversation-list" class="list"></div>
   </section>
 
@@ -88,27 +133,29 @@
       </ol>
     </div>
 
+    <div id="level-signal" class="alert" hidden></div>
+
     <div class="card">
-      <h3>내 학습을 기록하고 확인하는 법</h3>
-      <ol>
-        <li>학습 직후 「학습 기록」 탭에서 ①날짜 ②학습 시간 ③한 무엇을 ④느낌(쉬움/적정/어려움)을 남깁니다.</li>
-        <li>여기(「요약」)에서 총량 · 추세 · 스킬 분포를 확인합니다 — 내가 꾸준히 들인 시간이 눈에 보이도록.</li>
-        <li>채팅으로 <b>“요즘 내 학습은 어때?”</b>를 물으면 기록 기반 피드백을 받을 수 있어요.</li>
-        <li>‘쉬움’/‘어려움’이 반복되면 AI가 레벨 재점검을 제안합니다 — 채팅의 「레벨 다시 보기」로 요청할 수 있어요.</li>
-      </ol>
+      <h3>학습 요약</h3>
+      <div id="summary-body"></div>
+    </div>
+
+    <div class="card">
+      <h3>최근 14일 학습량</h3>
+      <div id="chart" class="chart"></div>
     </div>
 
     <div class="card">
       <h3>내 프로필</h3>
-      <p class="hint">AI가 추천할 때 이 정보를 참고합니다. AI가 제안한 레벨을 확인했다면 여기서 저장하세요.</p>
+      <p class="hint">AI와 추천 탭이 이 정보를 참고합니다. AI가 제안한 레벨을 확인했다면 여기서 저장하세요 — AI는 프로필을 직접 바꾸지 않아요.</p>
       <form id="profile-form" class="form-grid">
         <label>연령대
           <select id="p-age">
             <option value="">미설정</option>
-            <option value="3-6">3~6세 (부모 대용)</option>
+            <option value="3-6">3~6세 (보호자 사용)</option>
             <option value="7-12">7~12세</option>
             <option value="13-17">13~17세</option>
-            <option value="18+">18세 이상</option>
+            <option value="18+">성인 (18세 이상)</option>
           </select>
         </label>
         <label>레벨
@@ -122,12 +169,33 @@
             <option value="L6">L6 — 실제 자료</option>
           </select>
         </label>
-        <label>목표
-          <input type="text" id="p-goals" maxlength="100" placeholder="예: 영어 소설 읽기">
+        <label>레벨 확신
+          <select id="p-confidence">
+            <option value="">미확인</option>
+            <option value="high">확실함</option>
+            <option value="low">긴가민가</option>
+          </select>
+        </label>
+        <label>집중 스킬
+          <select id="p-focus">
+            <option value="">고르지 않음</option>
+            <option value="listening">듣기</option>
+            <option value="reading">읽기</option>
+            <option value="speaking">말하기</option>
+            <option value="vocabulary">어휘</option>
+            <option value="writing">쓰기</option>
+          </select>
         </label>
         <label>하루 학습 시간(분)
           <input type="number" id="p-minutes" min="0" max="1440" placeholder="30">
         </label>
+        <label class="wide">목표
+          <input type="text" id="p-goals" maxlength="200" placeholder="예: 영어 소설 읽기 / 아이와 영어 그림책 즐기기">
+        </label>
+        <label class="wide">관심사
+          <input type="text" id="p-interests" maxlength="200" placeholder="예: 공룡, 과학, 미드, 여행">
+        </label>
+        <label class="toggle wide"><input type="checkbox" id="p-free"> 무료 자료를 우선 추천받기</label>
         <div class="form-actions">
           <button type="submit">프로필 저장</button>
         </div>
@@ -135,22 +203,25 @@
     </div>
 
     <div class="card">
-      <h3>학습 요약</h3>
-      <div id="summary-body"></div>
-    </div>
-
-    <div class="card">
-      <h3>최근 14일 학습량</h3>
-      <div id="chart" class="chart"></div>
+      <h3>내 학습을 기록하고 확인하는 법</h3>
+      <ol>
+        <li>학습 직후 「기록」 탭에서 ①날짜 ②학습 시간 ③한 것 ④느낌(쉬움/적정/어려움)을 남깁니다. 추천 카드의 「기록하기」를 쓰면 더 빨라요.</li>
+        <li>여기(「요약」)에서 총량 · 추세 · 스킬 분포를 확인합니다 — 내가 꾸준히 들인 시간이 눈에 보이도록.</li>
+        <li>채팅으로 <b>“요즘 내 학습은 어때?”</b>를 물으면 기록 기반 피드백을 받을 수 있어요.</li>
+        <li>최근 10개 기록 중 7개 이상이 ‘쉬움’ 또는 ‘어려움’이면 레벨 재점검을 제안해 드려요.</li>
+      </ol>
     </div>
   </section>
 </main>
 
+<div id="toast" class="toast" role="status" hidden></div>
+
 <nav class="tabbar">
-  <button data-view="chat" class="active">💬 채팅</button>
-  <button data-view="records">📝 기록</button>
-  <button data-view="history">🗂 대화</button>
-  <button data-view="summary">📊 요약</button>
+  <button type="button" data-view="chat" class="active">💬<span>채팅</span></button>
+  <button type="button" data-view="recommend">🎯<span>추천</span></button>
+  <button type="button" data-view="records">📝<span>기록</span></button>
+  <button type="button" data-view="history">🗂<span>대화</span></button>
+  <button type="button" data-view="summary">📊<span>요약</span></button>
 </nav>
 
 <script src="app.js"></script>

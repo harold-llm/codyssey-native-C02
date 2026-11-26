@@ -1,5 +1,7 @@
 fastapi>=0.115
 uvicorn[standard]>=0.30
-firebase-admin>=6.5
-openai>=1.55
 python-dotenv>=1.0
+httpx>=0.27           # FastAPI TestClient (스모크 테스트)
+anthropic>=1.1        # Claude (LLM_PROVIDER=anthropic, 기본)
+openai>=1.66          # OpenAI Responses API (LLM_PROVIDER=openai, 선택)
+firebase-admin>=6.5   # Firestore (선택)

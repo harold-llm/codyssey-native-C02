@@ -2,22 +2,29 @@
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import RecordIn
-from services import store
+from services import catalog, store
 from services.analysis import build_summary
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 
 
+def _validated(rec: RecordIn) -> dict:
+    body = rec.model_dump(exclude_none=True)
+    if body.get("content_id") and not catalog.get(body["content_id"]):
+        raise HTTPException(422, "존재하지 않는 카탈로그 콘텐츠입니다")
+    return body
+
+
 @router.post("", status_code=201)
 def create_record(rec: RecordIn):
-    body = rec.model_dump(exclude_none=True)
+    body = _validated(rec)
     rid = store.add_record(body)
-    return {"id": rid, **body}
+    return store.get_record(rid) or {"id": rid, **body}
 
 
 @router.get("")
-def list_records():
-    return store.list_records()
+def list_records(limit: int = 500):
+    return store.list_records()[: max(1, min(limit, 5000))]
 
 
 @router.get("/summary")
@@ -28,9 +35,10 @@ def summary():
 
 @router.put("/{rid}")
 def update_record(rid: str, rec: RecordIn):
-    if not store.update_record(rid, rec.model_dump(exclude_none=True)):
+    body = _validated(rec)
+    if not store.update_record(rid, body):
         raise HTTPException(404, "존재하지 않는 기록입니다")
-    return {"id": rid, **rec.model_dump(exclude_none=True)}
+    return store.get_record(rid)
 
 
 @router.delete("/{rid}")
